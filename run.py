@@ -18,21 +18,20 @@ def getTrainingSample(n):
 def checkAndPrintTrain(outputDictionary, notFoundList, query2URLS):
     correct = 0
     for k in outputDictionary:
-        print k
-        print outputDictionary[k]
-        print testData.companyToWebsiteTrainingDictionary[k]
+        print (k)
+        print (outputDictionary)[k]
+        print (testData.companyToWebsiteTrainingDictionary[k])
         if outputDictionary[k][0] == testData.companyToWebsiteTrainingDictionary[k]:
-            print "correct"
+            print("correct")
             correct += 1
         else:
-            print "incorrect"
-        print 
-    print "total correct: " + str(correct) + " out of " + str(len(outputDictionary.keys()))
+            print("incorrect")
+    print ("total correct: " + str(correct) + " out of " + str(len(outputDictionary.keys())))
     print
     for e in notFoundList:
-        print e
-        print query2URLS[e]
-        print testData.companyToWebsiteTrainingDictionary[e]
+        print (e)
+        print (query2URLS[e])
+        print (testData.companyToWebsiteTrainingDictionary[e])
         print
 
 def printTrainingCorrectness(outputDictionary):
@@ -40,7 +39,7 @@ def printTrainingCorrectness(outputDictionary):
     for k in outputDictionary:
         if outputDictionary[k][0] == testData.companyToWebsiteTrainingDictionary[k]:
             correct += 1
-    print "total correct: " + str(correct) + " out of " + str(len(outputDictionary.keys()))
+    print ("total correct: " + str(correct) + " out of " + str(len(outputDictionary.keys())))
 
 def thresholdForTrainingSample(value, outputDictionary):
     correctMin = 1
@@ -68,17 +67,16 @@ def getThresholdForValue(value):
 companyNamesSample = getTrainingSample(25)
 query2URLSMap = convert.getQuery2URLS(companyNamesSample)
 outputDictionary, notFoundList = convert.getBestURLForName(query2URLSMap)
-print thresholdForTrainingSample("domain in companyName or vice versa", outputDictionary)
+print (thresholdForTrainingSample("domain in companyName or vice versa", outputDictionary))
 printTrainingCorrectness(outputDictionary)
 
 ##################### My Webscrape ##########################################
 # d, notFound, query2URLS = convert.matchURLToName(testData.getNCompanies(15))
 # for k in d:
-#     print k
-#     print d[k]
-#     print
+#     print(k)
+#     print(d[k])
 
-# print notFound
+# print(notFound)
 
 
 # query2URLS = {}
@@ -95,8 +93,8 @@ printTrainingCorrectness(outputDictionary)
 # d, notFound = convert.getBestURLForName(query2URLS)
 
 # for k in d:
-#     print k
-#     print d[k]
+#     print(k)
+#     print(d[k])
 #     print
 
 # print notFound
