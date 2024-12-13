@@ -1,3 +1,4 @@
+# 1. 
 import requests
 import concurrent.futures
 import re
@@ -113,6 +114,7 @@ if __name__ == "__main__":
     main()
 
 ##########################################################################################
+# 2.
 import requests
 import concurrent.futures
 import re
@@ -299,6 +301,144 @@ def main():
     print("\nParallel Website Status Check:")
     parallel_results = check_websites_parallel(companies_file)
     for result in parallel_results:
+        print(f"Original: {result['original_name']}")
+        print(f"Cleaned: {result['cleaned_name']}")
+        print(f"URL: {result['url']}")
+        print(f"Status Code: {result['status_code']}")
+        print(f"Time Taken: {result['time_taken']:.4f} seconds\n")
+
+if __name__ == "__main__":
+    main()
+
+###################################################################################################
+# 3.
+import asyncio
+import aiohttp
+import re
+import time
+from typing import List, Dict
+from functools import lru_cache
+
+class WebsiteChecker:
+    def __init__(self, timeout=3, max_concurrent=100):
+        """
+        Initialize WebsiteChecker with configurable timeout and concurrency.
+        
+        Args:
+            timeout (int): Request timeout in seconds
+            max_concurrent (int): Maximum concurrent connections
+        """
+        self.timeout = timeout
+        self.max_concurrent = max_concurrent
+        self.semaphore = asyncio.Semaphore(max_concurrent)
+
+    @staticmethod
+    @lru_cache(maxsize=1000)
+    def clean_company_name(name: str) -> str:
+        """
+        Optimized company name cleaning with caching.
+        
+        Uses regex compilation and caching to improve performance.
+        """
+        name = name.strip('\ufeff"\'')
+        
+        # Pre-compile regex for efficiency
+        suffixes = [
+            re.compile(r'\s+Inc\.?$', re.IGNORECASE),
+            re.compile(r'\s+Corp\.?$', re.IGNORECASE),
+            re.compile(r'\s+Incorporated$', re.IGNORECASE),
+            re.compile(r'\s+Corporation$', re.IGNORECASE),
+            re.compile(r'\s+Limited$', re.IGNORECASE),
+            re.compile(r'\s+Ltd\.?$', re.IGNORECASE)
+        ]
+        
+        for suffix in suffixes:
+            name = suffix.sub('', name)
+        
+        # Use translation for faster special character removal
+        name = name.translate(str.maketrans('', '', '!@#$%^&*()_+-=[]{}|;:,.<>?'))
+        
+        return ' '.join(name.split())
+
+    def generate_website_urls(self, name: str) -> List[str]:
+        """
+        Generate multiple URL variations with more intelligent guessing.
+        """
+        cleaned_name = self.clean_company_name(name).lower().replace(' ', '')
+        
+        url_variations = [
+            f"https://www.{cleaned_name}.com",
+            f"https://{cleaned_name}.com",
+            f"http://www.{cleaned_name}.com",
+            f"http://{cleaned_name}.com",
+            # Additional variations
+            f"https://{cleaned_name}.net",
+            f"https://www.{cleaned_name}.org"
+        ]
+        
+        return url_variations
+
+    async def check_website(self, session: aiohttp.ClientSession, company_name: str) -> Dict:
+        """
+        Asynchronous website status check with more robust error handling.
+        """
+        start_time = time.time()
+        cleaned_name = self.clean_company_name(company_name)
+        
+        async with self.semaphore:
+            for url in self.generate_website_urls(company_name):
+                try:
+                    async with session.get(url, timeout=self.timeout) as response:
+                        total_time = time.time() - start_time
+                        return {
+                            'original_name': company_name,
+                            'cleaned_name': cleaned_name,
+                            'url': url,
+                            'status_code': response.status,
+                            'time_taken': total_time
+                        }
+                except (aiohttp.ClientError, asyncio.TimeoutError):
+                    continue
+        
+        # If no URL works
+        total_time = time.time() - start_time
+        return {
+            'original_name': company_name,
+            'cleaned_name': cleaned_name,
+            'url': 'N/A',
+            'status_code': 0,
+            'time_taken': total_time
+        }
+
+    async def check_websites_async(self, companies: List[str]) -> List[Dict]:
+        """
+        Asynchronously check websites with improved concurrency management.
+        """
+        async with aiohttp.ClientSession() as session:
+            tasks = [self.check_website(session, company) for company in companies]
+            return await asyncio.gather(*tasks)
+
+    def run(self, companies: List[str]) -> List[Dict]:
+        """
+        Main method to run async website checks.
+        """
+        start_time = time.time()
+        results = asyncio.run(self.check_websites_async(companies))
+        total_execution_time = time.time() - start_time
+        
+        print(f"\nAsync Execution Total Time: {total_execution_time:.2f} seconds")
+        return results
+
+def main():
+    # Read companies from file
+    with open('companies.txt', 'r', encoding='utf-8') as f:
+        companies = f.read().splitlines()
+    
+    checker = WebsiteChecker(timeout=3, max_concurrent=50)
+    results = checker.run(companies)
+    
+    # Print results
+    for result in results:
         print(f"Original: {result['original_name']}")
         print(f"Cleaned: {result['cleaned_name']}")
         print(f"URL: {result['url']}")
