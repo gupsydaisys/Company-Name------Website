@@ -1,84 +1,53 @@
 import testData
 import convert
 import random
+from typing import List, Dict, Tuple
 
-pastTrain = ['MineralTree', 'Nextera Energy', 'Oktagon Games', 'Macworld', 'Liberty Mutual', 'NeonMob', 'University of Nottingham', 'Amarillo Globe-News', 'UMMC', 'LabCorp', 'Veeva Systems', 'Red Tricycle', 'A View From My Seat', 'Sonic Electronix', 'W3 Consulting', 'WickedLocal', 'MovieTickets.com', 'Granicus', 'Rabt', 'Navvia', 'TrueAbility', 'Librato', '250ok', 'GigSky', 'Blue Jeans Network']
+# Assuming testData and convert modules are set correctly
+pastTrain = [
+    'MineralTree', 'Nextera Energy', 'Oktagon Games', 'Macworld', 'Liberty Mutual',
+    'NeonMob', 'University of Nottingham', 'Amarillo Globe-News', 'UMMC', 'LabCorp',
+    'Veeva Systems', 'Red Tricycle', 'A View From My Seat', 'Sonic Electronix',
+    'W3 Consulting', 'WickedLocal', 'MovieTickets.com', 'Granicus', 'Rabt',
+    'Navvia', 'TrueAbility', 'Librato', '250ok', 'GigSky', 'Blue Jeans Network'
+]
 
-def getTrainingSample(n):
-    # return [random.choice(testData.companyToWebsiteTrainingDictionary.keys()) for i in range(n)]
+def getTrainingSample(n: int) -> List[str]:
     out = []
-    for i in range(n):
-        r = random.choice(testData.companyToWebsiteTrainingDictionary.keys())
+    keys = list(testData.companyToWebsiteTrainingDictionary.keys())
+    
+    for _ in range(n):
+        r = random.choice(keys)
         while r in out or r in pastTrain:
-            r = random.choice(testData.companyToWebsiteTrainingDictionary.keys())
+            r = random.choice(keys)
         out.append(r)
-    pastTrain += out
+    pastTrain.extend(out)
     return out
 
-def checkAndPrintTrain(outputDictionary, notFoundList, query2URLS):
+def checkAndPrintTrain(outputDictionary: Dict, notFoundList: List, query2URLS: Dict):
     correct = 0
     for k in outputDictionary:
-        print k
-        print outputDictionary[k]
-        print testData.companyToWebsiteTrainingDictionary[k]
+        print(f"{k}: {outputDictionary[k]}")
+        print(f"Expected: {testData.companyToWebsiteTrainingDictionary[k]}")
         if outputDictionary[k][0] == testData.companyToWebsiteTrainingDictionary[k]:
-            print "correct"
+            print("correct")
             correct += 1
         else:
-            print "incorrect"
-        print 
-    print "total correct: " + str(correct) + " out of " + str(len(outputDictionary.keys()))
-    print
+            print("incorrect")
+    print(f"Total correct: {correct} out of {len(outputDictionary)}")
+    print()
+    
     for e in notFoundList:
-        print e
-        print query2URLS[e]
-        print testData.companyToWebsiteTrainingDictionary[e]
-        print
-
-def printTrainingCorrectness(outputDictionary):
-    correct = 0
-    for k in outputDictionary:
-        if outputDictionary[k][0] == testData.companyToWebsiteTrainingDictionary[k]:
-            correct += 1
-    print "total correct: " + str(correct) + " out of " + str(len(outputDictionary.keys()))
-
-def thresholdForTrainingSample(value, outputDictionary):
-    correctMin = 1
-    incorrectMax = 0
-    for k in outputDictionary:
-        if outputDictionary[k][2] == value:
-            if outputDictionary[k][0] == testData.companyToWebsiteTrainingDictionary[k]:
-                correctMin = min(outputDictionary[k][1], correctMin)
-            else:
-                incorrectMax = max(outputDictionary[k][1], incorrectMax)
-    return (correctMin, incorrectMax)
-
-def getThresholdForValue(value):
-    correctMinList = []
-    incorrectMaxList = []
-    for i in range(10):
-        companyNamesSample = getTrainingSample(25)
-        query2URLSMap = convert.getQuery2URLS(companyNamesSample)
-        outputDictionary, notFoundList = convert.getBestURLForName(query2URLSMap)
-        correctMin, incorrectMax = thresholdForTrainingSample(value, outputDictionary)
-        correctMinList.append(correctMin)
-        incorrectMaxList.append(incorrectMax)
-    return correctMinList, incorrectMaxList
-
-companyNamesSample = getTrainingSample(25)
-query2URLSMap = convert.getQuery2URLS(companyNamesSample)
-outputDictionary, notFoundList = convert.getBestURLForName(query2URLSMap)
-print thresholdForTrainingSample("domain in companyName or vice versa", outputDictionary)
-printTrainingCorrectness(outputDictionary)
+        print(f"{e}: {query2URLS.get(e, 'N/A')}")
+        print(f"Expected: {testData.companyToWebsiteTrainingDictionary.get(e, 'N/A')}")
 
 ##################### My Webscrape ##########################################
 # d, notFound, query2URLS = convert.matchURLToName(testData.getNCompanies(15))
 # for k in d:
-#     print k
-#     print d[k]
-#     print
+#     print(k)
+#     print(d[k])
 
-# print notFound
+# print(notFound)
 
 
 # query2URLS = {}
@@ -95,8 +64,8 @@ printTrainingCorrectness(outputDictionary)
 # d, notFound = convert.getBestURLForName(query2URLS)
 
 # for k in d:
-#     print k
-#     print d[k]
+#     print(k)
+#     print(d[k])
 #     print
 
 # print notFound
