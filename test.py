@@ -1,4 +1,6 @@
-# 1. 
+"""1. Sequential Website Checking Method
+The first method (check_websites_sequential) uses a straightforward, synchronous approach to checking website statuses
+"""
 import requests
 import concurrent.futures
 import re
@@ -114,7 +116,9 @@ if __name__ == "__main__":
     main()
 
 ##########################################################################################
-# 2.
+"""2. Parallel Website Checking Method
+The second method (check_websites_parallel) improves on the first by introducing concurrent checking:
+"""
 import requests
 import concurrent.futures
 import re
@@ -311,7 +315,9 @@ if __name__ == "__main__":
     main()
 
 ###################################################################################################
-# 3.
+"""3. Asynchronous Website Checking Method
+The third method (WebsiteChecker class) uses an advanced asynchronous approach
+"""
 import asyncio
 import aiohttp
 import re
